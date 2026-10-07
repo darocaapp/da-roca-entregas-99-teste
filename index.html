@@ -3,28 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Da Roça Entregas</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f3e7d3;
             color: #5b402d;
+
             display: flex;
             justify-content: center;
             align-items: center;
+
             min-height: 100vh;
+
             text-align: center;
         }
 
         .box {
             background: white;
+
             padding: 35px;
+
             border-radius: 18px;
-            width: 85%;
+
+            width: 90%;
             max-width: 420px;
-            box-shadow: 0 5px 20px rgba(0,0,0,.15);
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,.15);
         }
 
         h1 {
@@ -32,21 +45,36 @@
             color: #6b4f35;
         }
 
-        .codigo {
-            font-size: 30px;
+        .plataforma {
+            font-size: 18px;
             font-weight: bold;
-            margin: 25px 0;
+
+            margin-top: 20px;
+        }
+
+        .codigo {
+            font-size: 32px;
+            font-weight: bold;
+
+            margin: 20px 0;
+
+            letter-spacing: 2px;
         }
 
         button {
             width: 100%;
+
             padding: 17px;
+
             border: 0;
             border-radius: 12px;
+
             background: #6b4f35;
             color: white;
+
             font-size: 18px;
             font-weight: bold;
+
             cursor: pointer;
         }
 
@@ -63,45 +91,182 @@
 
     <h1>Da Roça Entregas</h1>
 
-    <p>Confirmação de entrega iFood</p>
+    <div
+        class="plataforma"
+        id="plataforma">
+        Carregando...
+    </div>
 
-    <div class="codigo" id="codigo">--------</div>
+    <div
+        class="codigo"
+        id="codigo">
+        --------
+    </div>
 
     <button onclick="abrirApp()">
         Abrir confirmação
     </button>
 
     <div id="aviso">
-        Abrindo aplicativo Da Roça...
+        Preparando aplicativo...
     </div>
 
 </div>
 
 <script>
-    const params = new URLSearchParams(window.location.search);
 
-    let codigo = params.get("codigo") || "";
+    /*
+    ========================================
+    PARÂMETROS DO LINK
+    ========================================
 
-    codigo = codigo.replace(/\D/g, "");
+    Exemplos:
 
-    document.getElementById("codigo").textContent =
-        codigo || "Código não informado";
+    iFood:
+    ?plataforma=ifood&codigo=19840113
+
+    99Food:
+    ?plataforma=99&codigo=19840113
+    */
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    let codigo =
+        params.get("codigo") || "";
+
+    let plataforma =
+        params.get("plataforma") || "ifood";
+
+
+    /*
+    REMOVE ESPAÇOS E QUALQUER
+    COISA QUE NÃO SEJA NÚMERO
+    */
+
+    codigo =
+        codigo.replace(/\D/g, "");
+
+
+    /*
+    PADRONIZA A PLATAFORMA
+    */
+
+    plataforma =
+        plataforma
+        .toLowerCase()
+        .trim();
+
+
+    /*
+    ACEITA ALGUMAS VARIAÇÕES
+    */
+
+    if (
+        plataforma === "99food" ||
+        plataforma === "99-food"
+    ) {
+        plataforma = "99";
+    }
+
+
+    /*
+    MOSTRA O CÓDIGO
+    */
+
+    document.getElementById(
+        "codigo"
+    ).textContent =
+        codigo ||
+        "Código não informado";
+
+
+    /*
+    MOSTRA A PLATAFORMA
+    */
+
+    if (plataforma === "99") {
+
+        document.getElementById(
+            "plataforma"
+        ).textContent =
+            "99Food";
+
+    } else {
+
+        plataforma = "ifood";
+
+        document.getElementById(
+            "plataforma"
+        ).textContent =
+            "iFood";
+    }
+
+
+    /*
+    ABRE O APLICATIVO
+    */
 
     function abrirApp() {
 
-        if (!codigo) {
-            document.getElementById("aviso").textContent =
-                "Código do pedido não informado.";
+        if (codigo.length !== 8) {
+
+            document.getElementById(
+                "aviso"
+            ).textContent =
+                "Localizador inválido.";
+
             return;
         }
 
+
+        let destino = "";
+
+
+        if (plataforma === "99") {
+
+            destino =
+                "daroca://99/" +
+                codigo;
+
+        } else {
+
+            destino =
+                "daroca://ifood/" +
+                codigo;
+        }
+
+
+        document.getElementById(
+            "aviso"
+        ).textContent =
+            "Abrindo " +
+            (
+                plataforma === "99"
+                ? "99Food..."
+                : "iFood..."
+            );
+
+
         window.location.href =
-            "daroca://ifood/" + codigo;
+            destino;
     }
 
-    if (codigo) {
-        setTimeout(abrirApp, 500);
+
+    /*
+    ABRE AUTOMATICAMENTE
+    */
+
+    if (codigo.length === 8) {
+
+        setTimeout(
+            abrirApp,
+            500
+        );
     }
+
 </script>
 
 </body>
