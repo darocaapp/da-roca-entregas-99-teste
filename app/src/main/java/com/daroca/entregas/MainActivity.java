@@ -1,6 +1,8 @@
 package com.daroca.entregas;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,12 +15,10 @@ public class MainActivity extends Activity {
 
     private WebView webView;
 
+    private String orderCode = "";
+
     private static final String FOOD99_URL =
             "https://food-b-h5.99app.com/pt-BR/v2/confirmation-entrega";
-
-    // CÓDIGO FIXO APENAS PARA NOSSO PRIMEIRO TESTE
-    private static final String CODIGO_TESTE =
-            "19840113";
 
     private final Handler handler =
             new Handler(Looper.getMainLooper());
@@ -50,18 +50,87 @@ public class MainActivity extends Activity {
                     ) {
                         super.onPageFinished(view, url);
 
-                        if (url != null &&
-                                url.contains("99app.com")) {
+                        if (url != null
+                                && url.contains("99app.com")
+                                && orderCode.length() == 8) {
 
-                            iniciarTentativas(
-                                    CODIGO_TESTE
-                            );
+                            iniciarTentativas(orderCode);
                         }
                     }
                 }
         );
 
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        setIntent(intent);
+
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+
+        orderCode = "";
+        preenchido = false;
+
+        Uri data = intent.getData();
+
+        /*
+         * O link que receberemos será:
+         *
+         * daroca://99/19840113
+         */
+
+        if (data != null
+                && "daroca".equalsIgnoreCase(
+                        data.getScheme()
+                )) {
+
+            String host = data.getHost();
+
+            if (host != null
+                    && host.equalsIgnoreCase("99")) {
+
+                if (!data.getPathSegments().isEmpty()) {
+
+                    orderCode =
+                            digitsOnly(
+                                    data
+                                    .getPathSegments()
+                                    .get(0)
+                            );
+                }
+            }
+        }
+
+        /*
+         * Se abrir pelo link, mostra o código
+         * que o aplicativo recebeu.
+         */
+
+        if (orderCode.length() == 8) {
+
+            Toast.makeText(
+                    this,
+                    "99Food recebido: " + orderCode,
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
         webView.loadUrl(FOOD99_URL);
+    }
+
+    private String digitsOnly(String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+        return value.replaceAll("\\D", "");
     }
 
     private void iniciarTentativas(
@@ -71,38 +140,30 @@ public class MainActivity extends Activity {
         preenchido = false;
 
         /*
-         * A página da 99 pode terminar de carregar
-         * antes dos 8 campos aparecerem.
-         *
-         * Por isso tentamos novamente a cada
-         * 500 milissegundos.
+         * Tentamos durante aproximadamente
+         * 10 segundos porque os campos da 99
+         * podem aparecer depois da página.
          */
 
         for (int i = 0; i <= 20; i++) {
 
-            final int tentativa = i;
-
             handler.postDelayed(
-                    () -> preencherCodigo99(
-                            codigo,
-                            tentativa
-                    ),
+                    () -> preencherCodigo99(codigo),
                     i * 500L
             );
         }
     }
 
     private void preencherCodigo99(
-            String codigo,
-            int tentativa
+            String codigo
     ) {
 
         if (preenchido) {
             return;
         }
 
-        if (codigo == null ||
-                codigo.length() != 8) {
+        if (codigo == null
+                || codigo.length() != 8) {
 
             return;
         }
@@ -113,11 +174,12 @@ public class MainActivity extends Activity {
                         .replace("'", "");
 
         /*
-         * Este é o seletor que acabamos
-         * de testar no Chrome.
+         * Este é exatamente o seletor
+         * que encontramos no site da 99:
          *
-         * Ele encontrou exatamente
-         * os 8 campos da 99Food.
+         * .verification-code-input input
+         *
+         * Ele retorna os 8 quadradinhos.
          */
 
         String javascript =
@@ -133,55 +195,24 @@ public class MainActivity extends Activity {
                 "'.verification-code-input input'" +
                 ");" +
 
-                /*
-                 * Ainda não apareceram
-                 * os oito campos.
-                 */
-
                 "if(campos.length !== 8){" +
-
-                "return 'AGUARDANDO:' +" +
-                "campos.length;" +
-
+                "return 'AGUARDANDO:' + campos.length;" +
                 "}" +
-
-                /*
-                 * Coloca um dígito
-                 * em cada quadradinho.
-                 */
 
                 "for(var i=0;i<8;i++){" +
 
                 "var campo=campos[i];" +
-
-                "var numero=" +
-                "codigo.charAt(i);" +
+                "var numero=codigo.charAt(i);" +
 
                 "try{" +
 
-                /*
-                 * Usa o setter nativo do INPUT.
-                 * Foi exatamente o método que
-                 * funcionou no nosso teste
-                 * pelo Console do Chrome.
-                 */
-
                 "var setter=" +
-
                 "Object.getOwnPropertyDescriptor(" +
                 "window.HTMLInputElement.prototype," +
                 "'value'" +
                 ").set;" +
 
-                "setter.call(" +
-                "campo," +
-                "numero" +
-                ");" +
-
-                /*
-                 * Avisa a página/Vue que
-                 * o valor realmente mudou.
-                 */
+                "setter.call(campo,numero);" +
 
                 "campo.dispatchEvent(" +
                 "new Event(" +
@@ -205,11 +236,6 @@ public class MainActivity extends Activity {
 
                 "}" +
 
-                /*
-                 * Deixa o último campo
-                 * selecionado.
-                 */
-
                 "campos[7].focus();" +
 
                 "return 'PREENCHIDO';" +
@@ -221,8 +247,8 @@ public class MainActivity extends Activity {
 
                 resultado -> {
 
-                    if (resultado != null &&
-                            resultado.contains(
+                    if (resultado != null
+                            && resultado.contains(
                                     "PREENCHIDO"
                             )) {
 
@@ -243,8 +269,6 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
-        handler.removeCallbacksAndMessages(
-                null
-        );
+        handler.removeCallbacksAndMessages(null);
     }
 }
