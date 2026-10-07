@@ -1,409 +1,623 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Da Roça - Gerador iFood</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<style>
-* {
-    box-sizing: border-box;
-}
+    <title>Da Roça - Gerador iFood e 99Food</title>
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f3e7d3;
-    color: #5b402d;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    <style>
 
-.container {
-    width: 92%;
-    max-width: 520px;
-    background: white;
-    padding: 32px;
-    border-radius: 20px;
-    box-shadow: 0 6px 25px rgba(0,0,0,.15);
-}
+        * {
+            box-sizing: border-box;
+        }
 
-h1 {
-    margin: 0;
-    text-align: center;
-    color: #6b4f35;
-}
+        body {
+            margin: 0;
+            min-height: 100vh;
 
-.subtitulo {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #80644c;
-}
+            font-family: Arial, sans-serif;
 
-label {
-    display: block;
-    font-weight: bold;
-    margin-top: 18px;
-    margin-bottom: 7px;
-}
+            background: #f3e7d3;
+            color: #5b402d;
 
-input {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #d7c5ad;
-    border-radius: 10px;
-    font-size: 18px;
-    outline: none;
-}
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-input:focus {
-    border-color: #6b4f35;
-}
+            padding: 20px;
+        }
 
-button {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 11px;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 12px;
-}
+        .container {
+            width: 100%;
+            max-width: 520px;
 
-.gerar {
-    background: #6b4f35;
-    color: white;
-    margin-top: 25px;
-}
+            background: #ffffff;
 
-.copiar {
-    background: #3f704d;
-    color: white;
-}
+            padding: 30px;
 
-.whatsapp {
-    background: #25D366;
-    color: white;
-}
+            border-radius: 20px;
 
-.resultado {
-    display: none;
-    margin-top: 25px;
-    padding: 18px;
-    background: #f7f1e8;
-    border-radius: 12px;
-}
+            box-shadow:
+                0 6px 25px rgba(0, 0, 0, 0.15);
+        }
 
-.nomeResultado {
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
+        h1 {
+            text-align: center;
 
-.codigoResultado {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 12px;
-}
+            margin-top: 0;
+            margin-bottom: 5px;
 
-.link {
-    font-size: 14px;
-    word-break: break-all;
-    color: #5b402d;
-}
+            color: #65472f;
+        }
 
-.aviso {
-    text-align: center;
-    margin-top: 12px;
-    font-weight: bold;
-    min-height: 20px;
-}
-</style>
+        .subtitulo {
+            text-align: center;
+
+            margin-bottom: 30px;
+
+            color: #80664f;
+        }
+
+        label {
+            display: block;
+
+            margin-top: 18px;
+            margin-bottom: 7px;
+
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+
+            padding: 15px;
+
+            border: 2px solid #d8c5ae;
+            border-radius: 10px;
+
+            font-size: 18px;
+
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #79583c;
+        }
+
+        .botoes-plataforma {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 12px;
+
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+
+            padding: 16px;
+
+            border-radius: 10px;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .ifood {
+            background: #ea1d2c;
+            color: white;
+        }
+
+        .food99 {
+            background: #ffd400;
+            color: #222222;
+        }
+
+        .resultado {
+            display: none;
+
+            margin-top: 25px;
+
+            padding-top: 25px;
+
+            border-top: 1px solid #e5d7c7;
+        }
+
+        .plataforma-escolhida {
+            text-align: center;
+
+            font-weight: bold;
+
+            margin-bottom: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+
+            padding: 14px;
+
+            resize: none;
+
+            border: 2px solid #d8c5ae;
+            border-radius: 10px;
+
+            font-size: 15px;
+        }
+
+        .acoes {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 12px;
+
+            margin-top: 12px;
+        }
+
+        .copiar {
+            background: #6b4f35;
+            color: white;
+        }
+
+        .whatsapp {
+            background: #25d366;
+            color: white;
+        }
+
+        .status {
+            min-height: 22px;
+
+            text-align: center;
+
+            margin-top: 15px;
+
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+
+            .botoes-plataforma,
+            .acoes {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 22px;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>Da Roça</h1>
+    <h1>Da Roça Entregas</h1>
 
     <div class="subtitulo">
-        Gerador de confirmação iFood
+        Gerador de confirmação iFood e 99Food
     </div>
+
+
+    <!-- NOME -->
 
     <label for="nome">
         Nome do cliente
     </label>
 
     <input
-        type="text"
         id="nome"
-        placeholder="Ex: Rafaella"
+        type="text"
+        placeholder="Ex.: Rafaella"
         autocomplete="off"
     >
 
+
+    <!-- LOCALIZADOR -->
+
     <label for="codigo">
-        Localizador iFood
+        Localizador do pedido
     </label>
 
     <input
-        type="text"
         id="codigo"
-        placeholder="Pode colar: 1984 0113"
+        type="text"
         inputmode="numeric"
+        placeholder="Ex.: 1984 0113"
         autocomplete="off"
     >
 
-    <button class="gerar" onclick="gerar()">
-        GERAR LINK
-    </button>
 
-    <div class="resultado" id="resultado">
+    <!-- BOTÕES -->
 
-        <div class="nomeResultado" id="nomeResultado"></div>
+    <div class="botoes-plataforma">
 
-        <div class="codigoResultado" id="codigoResultado"></div>
-
-        <div class="link" id="linkResultado"></div>
-
-        <button class="copiar" onclick="copiarMensagem()">
-            COPIAR MENSAGEM
+        <button
+            class="ifood"
+            onclick="gerar('ifood')"
+        >
+            GERAR iFOOD
         </button>
 
-        <button class="whatsapp" onclick="abrirWhatsApp()">
-            ABRIR WHATSAPP
+
+        <button
+            class="food99"
+            onclick="gerar('99')"
+        >
+            GERAR 99FOOD
         </button>
 
     </div>
 
-    <div class="aviso" id="aviso"></div>
+
+    <!-- RESULTADO -->
+
+    <div
+        class="resultado"
+        id="resultado"
+    >
+
+        <div
+            class="plataforma-escolhida"
+            id="plataformaEscolhida"
+        >
+        </div>
+
+
+        <textarea
+            id="mensagem"
+            readonly
+        ></textarea>
+
+
+        <div class="acoes">
+
+            <button
+                class="copiar"
+                onclick="copiarMensagem()"
+            >
+                COPIAR MENSAGEM
+            </button>
+
+
+            <button
+                class="whatsapp"
+                onclick="abrirWhatsApp()"
+            >
+                ABRIR WHATSAPP
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="status"
+        id="status"
+    >
+    </div>
 
 </div>
 
+
 <script>
 
-const BASE_LINK =
-"https://darocaapp.github.io/da-roca-entregas-apk/?codigo=";
+    let mensagemAtual = "";
 
-let mensagemGerada = "";
-let linkGerado = "";
-
-const campoCodigo = document.getElementById("codigo");
-const campoNome = document.getElementById("nome");
-
-/*
-REMOVE AUTOMATICAMENTE:
-espaços
-traços
-pontos
-letras
-ou qualquer outro caractere
-
-Exemplo:
-1984 0113
-vira:
-19840113
-*/
-
-campoCodigo.addEventListener("input", function () {
-
-    let numeros =
-        this.value.replace(/\D/g, "");
-
-    this.value =
-        numeros.slice(0, 8);
-});
-
-/*
-TRATAMENTO ESPECIAL AO COLAR
-DO IFOOD
-*/
-
-campoCodigo.addEventListener("paste", function (event) {
-
-    event.preventDefault();
-
-    let texto =
-        (event.clipboardData || window.clipboardData)
-        .getData("text");
-
-    let numeros =
-        texto.replace(/\D/g, "").slice(0, 8);
-
-    this.value = numeros;
-
-    this.dispatchEvent(
-        new Event("input", { bubbles: true })
-    );
-});
-
-/*
-ENTER NO NOME:
-vai para o localizador
-*/
-
-campoNome.addEventListener("keydown", function(event) {
-
-    if (event.key === "Enter") {
-
-        campoCodigo.focus();
-    }
-});
-
-/*
-ENTER NO LOCALIZADOR:
-gera o link
-*/
-
-campoCodigo.addEventListener("keydown", function(event) {
-
-    if (event.key === "Enter") {
-
-        gerar();
-    }
-});
-
-function gerar() {
-
-    const nome =
-        campoNome.value.trim();
 
     /*
-    REMOVE QUALQUER COISA
-    QUE NÃO SEJA NÚMERO NOVAMENTE
-    POR SEGURANÇA
+    ==========================================
+    REMOVE ESPAÇO DO LOCALIZADOR
+    ==========================================
+
+    Exemplo:
+
+    1984 0113
+
+    vira:
+
+    19840113
     */
 
-    const codigo =
-        campoCodigo.value
-        .replace(/\D/g, "")
-        .slice(0, 8);
+    document
+        .getElementById("codigo")
+        .addEventListener(
+            "input",
+            function () {
 
-    campoCodigo.value = codigo;
-
-    const aviso =
-        document.getElementById("aviso");
-
-    aviso.textContent = "";
-
-    if (!nome) {
-
-        aviso.textContent =
-            "Digite o nome do cliente.";
-
-        campoNome.focus();
-
-        return;
-    }
-
-    if (codigo.length !== 8) {
-
-        aviso.textContent =
-            "O localizador precisa ter 8 números.";
-
-        campoCodigo.focus();
-
-        return;
-    }
-
-    linkGerado =
-        BASE_LINK + codigo;
-
-    mensagemGerada =
-        "🛵 ENTREGA: " +
-        nome.toUpperCase() +
-        "\n\n" +
-        "Confirmação iFood:" +
-        "\n" +
-        linkGerado;
-
-    document.getElementById(
-        "nomeResultado"
-    ).textContent =
-        "Cliente: " + nome;
-
-    document.getElementById(
-        "codigoResultado"
-    ).textContent =
-        "Localizador: " + codigo;
-
-    document.getElementById(
-        "linkResultado"
-    ).textContent =
-        linkGerado;
-
-    document.getElementById(
-        "resultado"
-    ).style.display =
-        "block";
-
-    aviso.textContent =
-        "Link gerado com sucesso!";
-}
-
-async function copiarMensagem() {
-
-    if (!mensagemGerada) {
-        return;
-    }
-
-    try {
-
-        await navigator.clipboard.writeText(
-            mensagemGerada
+                this.value =
+                    this.value
+                        .replace(/\D/g, "")
+                        .slice(0, 8);
+            }
         );
 
-        document.getElementById(
-            "aviso"
-        ).textContent =
-            "Mensagem copiada!";
 
-    } catch (erro) {
+    /*
+    ==========================================
+    GERAR
+    ==========================================
+    */
 
-        const area =
-            document.createElement("textarea");
+    function gerar(plataforma) {
 
-        area.value =
-            mensagemGerada;
+        const nome =
+            document
+                .getElementById("nome")
+                .value
+                .trim();
 
-        document.body.appendChild(area);
 
-        area.select();
+        const codigo =
+            document
+                .getElementById("codigo")
+                .value
+                .replace(/\D/g, "")
+                .slice(0, 8);
 
-        document.execCommand("copy");
 
-        document.body.removeChild(area);
+        const status =
+            document.getElementById("status");
 
-        document.getElementById(
-            "aviso"
-        ).textContent =
-            "Mensagem copiada!";
+
+        status.textContent = "";
+
+
+        /*
+        NOME
+        */
+
+        if (!nome) {
+
+            status.textContent =
+                "Digite o nome do cliente.";
+
+            document
+                .getElementById("nome")
+                .focus();
+
+            return;
+        }
+
+
+        /*
+        LOCALIZADOR
+        */
+
+        if (codigo.length !== 8) {
+
+            status.textContent =
+                "O localizador precisa ter 8 números.";
+
+            document
+                .getElementById("codigo")
+                .focus();
+
+            return;
+        }
+
+
+        let link = "";
+
+        let nomePlataforma = "";
+
+
+        /*
+        ==========================================
+        IFOOD
+        ==========================================
+        */
+
+        if (plataforma === "ifood") {
+
+            nomePlataforma =
+                "iFood";
+
+
+            /*
+            Usa o projeto ORIGINAL do iFood,
+            que já sabemos que funciona.
+            */
+
+            link =
+                "https://darocaapp.github.io/" +
+                "da-roca-entregas-apk/" +
+                "?codigo=" +
+                codigo;
+        }
+
+
+        /*
+        ==========================================
+        99FOOD
+        ==========================================
+        */
+
+        if (plataforma === "99") {
+
+            nomePlataforma =
+                "99Food";
+
+
+            /*
+            Usa o novo projeto da 99,
+            que acabamos de testar.
+            */
+
+            link =
+                "https://darocaapp.github.io/" +
+                "da-roca-entregas-99-teste/" +
+                "?plataforma=99&codigo=" +
+                codigo;
+        }
+
+
+        /*
+        ==========================================
+        MENSAGEM PARA O MOTOBOY
+        ==========================================
+        */
+
+        mensagemAtual =
+            "🛵 ENTREGA: " +
+            nome.toUpperCase() +
+            "\n\n" +
+
+            "Confirmação " +
+            nomePlataforma +
+            ":\n" +
+
+            link;
+
+
+        /*
+        MOSTRA MENSAGEM
+        */
+
+        document
+            .getElementById("mensagem")
+            .value =
+                mensagemAtual;
+
+
+        /*
+        MOSTRA PLATAFORMA
+        */
+
+        document
+            .getElementById(
+                "plataformaEscolhida"
+            )
+            .textContent =
+                "Plataforma: " +
+                nomePlataforma;
+
+
+        /*
+        MOSTRA RESULTADO
+        */
+
+        document
+            .getElementById("resultado")
+            .style.display =
+                "block";
+
+
+        status.textContent =
+            "Mensagem gerada!";
     }
-}
 
-function abrirWhatsApp() {
 
-    if (!mensagemGerada) {
-        return;
+    /*
+    ==========================================
+    COPIAR MENSAGEM
+    ==========================================
+    */
+
+    async function copiarMensagem() {
+
+        const status =
+            document.getElementById("status");
+
+
+        if (!mensagemAtual) {
+
+            status.textContent =
+                "Primeiro gere uma mensagem.";
+
+            return;
+        }
+
+
+        try {
+
+            await navigator
+                .clipboard
+                .writeText(
+                    mensagemAtual
+                );
+
+
+            status.textContent =
+                "Mensagem copiada!";
+
+
+        } catch (erro) {
+
+
+            /*
+            MÉTODO ALTERNATIVO
+            */
+
+            const textarea =
+                document.getElementById(
+                    "mensagem"
+                );
+
+
+            textarea.select();
+
+
+            document.execCommand(
+                "copy"
+            );
+
+
+            status.textContent =
+                "Mensagem copiada!";
+        }
     }
 
-    const url =
-        "https://wa.me/?text=" +
-        encodeURIComponent(
-            mensagemGerada
+
+    /*
+    ==========================================
+    ABRIR WHATSAPP
+    ==========================================
+    */
+
+    function abrirWhatsApp() {
+
+        const status =
+            document.getElementById("status");
+
+
+        if (!mensagemAtual) {
+
+            status.textContent =
+                "Primeiro gere uma mensagem.";
+
+            return;
+        }
+
+
+        const url =
+            "https://wa.me/?text=" +
+            encodeURIComponent(
+                mensagemAtual
+            );
+
+
+        window.open(
+            url,
+            "_blank"
         );
-
-    window.open(
-        url,
-        "_blank"
-    );
-}
+    }
 
 </script>
 
 </body>
+
 </html>
