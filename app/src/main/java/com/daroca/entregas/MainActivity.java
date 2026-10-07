@@ -1,8 +1,6 @@
 package com.daroca.entregas;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,14 +13,17 @@ public class MainActivity extends Activity {
 
     private WebView webView;
 
-    private String platform = "ifood";
-    private String orderCode = "";
+    private static final String FOOD99_URL =
+            "https://food-b-h5.99app.com/pt-BR/v2/confirmation-entrega";
 
-    private static final String IFOOD_URL =
-            "https://confirmacao-entrega-propria.ifood.com.br/numero-pedido";
+    // CÓDIGO FIXO APENAS PARA NOSSO PRIMEIRO TESTE
+    private static final String CODIGO_TESTE =
+            "19840113";
 
     private final Handler handler =
             new Handler(Looper.getMainLooper());
+
+    private boolean preenchido = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,109 +36,55 @@ public class MainActivity extends Activity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(
+                new WebChromeClient()
+        );
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(
+                new WebViewClient() {
 
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
+                    @Override
+                    public void onPageFinished(
+                            WebView view,
+                            String url
+                    ) {
+                        super.onPageFinished(view, url);
 
-                if ("ifood".equals(platform)
-                        && orderCode.length() == 8) {
+                        if (url != null &&
+                                url.contains("99app.com")) {
 
-                    Toast.makeText(
-                            MainActivity.this,
-                            "Código recebido: " + orderCode,
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    iniciarTentativas(orderCode);
+                            iniciarTentativas(
+                                    CODIGO_TESTE
+                            );
+                        }
+                    }
                 }
-            }
-        });
+        );
 
-        handleIntent(getIntent());
+        webView.loadUrl(FOOD99_URL);
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    private void iniciarTentativas(
+            final String codigo
+    ) {
 
-        setIntent(intent);
+        preenchido = false;
 
-        handleIntent(intent);
-    }
-
-    private void handleIntent(Intent intent) {
-
-        platform = "ifood";
-        orderCode = "";
-
-        Uri data = intent.getData();
-
-        if (data != null
-                && "daroca".equalsIgnoreCase(data.getScheme())) {
-
-            String host = data.getHost();
-
-            if (host != null) {
-                platform = host.toLowerCase();
-            }
-
-            if (!data.getPathSegments().isEmpty()) {
-
-                orderCode = digitsOnly(
-                        data.getPathSegments().get(0)
-                );
-            }
-        }
-
-        if ("ifood".equals(platform)) {
-
-            webView.loadUrl(IFOOD_URL);
-
-        } else {
-
-            showUnsupportedPlatform();
-        }
-    }
-
-    private String digitsOnly(String value) {
-
-        if (value == null) {
-            return "";
-        }
-
-        return value.replaceAll("\\D", "");
-    }
-
-    /*
-     * O site do iFood possui 8 campos separados.
-     *
-     * Exemplo:
-     *
-     * order-number-input-0
-     * order-number-input-1
-     * order-number-input-2
-     * ...
-     * order-number-input-7
-     *
-     * Vamos esperar esses campos aparecerem
-     * e colocar um número em cada campo.
-     */
-
-    private void iniciarTentativas(final String code) {
-
-        // tenta durante aproximadamente 10 segundos
+        /*
+         * A página da 99 pode terminar de carregar
+         * antes dos 8 campos aparecerem.
+         *
+         * Por isso tentamos novamente a cada
+         * 500 milissegundos.
+         */
 
         for (int i = 0; i <= 20; i++) {
 
             final int tentativa = i;
 
             handler.postDelayed(
-                    () -> preencherCamposIfood(
-                            code,
+                    () -> preencherCodigo99(
+                            codigo,
                             tentativa
                     ),
                     i * 500L
@@ -145,152 +92,158 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void preencherCamposIfood(
-            String code,
+    private void preencherCodigo99(
+            String codigo,
             int tentativa
     ) {
 
-        if (code == null || code.length() != 8) {
+        if (preenchido) {
             return;
         }
 
-        String safeCode =
-                code.replace("\\", "")
+        if (codigo == null ||
+                codigo.length() != 8) {
+
+            return;
+        }
+
+        String codigoSeguro =
+                codigo
+                        .replace("\\", "")
                         .replace("'", "");
+
+        /*
+         * Este é o seletor que acabamos
+         * de testar no Chrome.
+         *
+         * Ele encontrou exatamente
+         * os 8 campos da 99Food.
+         */
 
         String javascript =
 
                 "(function(){" +
 
-                "var codigo='" + safeCode + "';" +
+                "var codigo='" +
+                codigoSeguro +
+                "';" +
 
-                "var campos=document.querySelectorAll(" +
-                "'[data-testid^=\"order-number-input-\"]'" +
+                "var campos=" +
+                "document.querySelectorAll(" +
+                "'.verification-code-input input'" +
                 ");" +
 
-                "if(campos.length < 8){" +
-                "return 'AGUARDANDO:' + campos.length;" +
+                /*
+                 * Ainda não apareceram
+                 * os oito campos.
+                 */
+
+                "if(campos.length !== 8){" +
+
+                "return 'AGUARDANDO:' +" +
+                "campos.length;" +
+
                 "}" +
+
+                /*
+                 * Coloca um dígito
+                 * em cada quadradinho.
+                 */
 
                 "for(var i=0;i<8;i++){" +
 
                 "var campo=campos[i];" +
-                "var numero=codigo.charAt(i);" +
+
+                "var numero=" +
+                "codigo.charAt(i);" +
 
                 "try{" +
 
-                "campo.focus();" +
-
                 /*
-                 * Primeiro tentamos alterar o value
-                 * usando o setter nativo do input.
-                 * Isso é importante para páginas React.
+                 * Usa o setter nativo do INPUT.
+                 * Foi exatamente o método que
+                 * funcionou no nosso teste
+                 * pelo Console do Chrome.
                  */
 
                 "var setter=" +
+
                 "Object.getOwnPropertyDescriptor(" +
                 "window.HTMLInputElement.prototype," +
-                "'value').set;" +
+                "'value'" +
+                ").set;" +
 
-                "setter.call(campo,numero);" +
+                "setter.call(" +
+                "campo," +
+                "numero" +
+                ");" +
 
                 /*
-                 * Avisamos o React/iFood que
-                 * o conteúdo realmente mudou.
+                 * Avisa a página/Vue que
+                 * o valor realmente mudou.
                  */
 
                 "campo.dispatchEvent(" +
-                "new Event('input',{" +
-                "bubbles:true" +
-                "})" +
+                "new Event(" +
+                "'input'," +
+                "{bubbles:true}" +
+                ")" +
                 ");" +
 
                 "campo.dispatchEvent(" +
-                "new Event('change',{" +
-                "bubbles:true" +
-                "})" +
-                ");" +
-
-                "campo.dispatchEvent(" +
-                "new KeyboardEvent('keyup',{" +
-                "bubbles:true," +
-                "key:numero" +
-                "})" +
+                "new Event(" +
+                "'change'," +
+                "{bubbles:true}" +
+                ")" +
                 ");" +
 
                 "}catch(e){" +
 
-                "campo.value=numero;" +
-
-                "campo.dispatchEvent(" +
-                "new Event('input',{" +
-                "bubbles:true" +
-                "})" +
-                ");" +
+                "return 'ERRO:' + e.message;" +
 
                 "}" +
 
                 "}" +
+
+                /*
+                 * Deixa o último campo
+                 * selecionado.
+                 */
 
                 "campos[7].focus();" +
 
-                "return 'PREENCHIDO:' + campos.length;" +
+                "return 'PREENCHIDO';" +
 
                 "})();";
 
         webView.evaluateJavascript(
                 javascript,
 
-                result -> {
+                resultado -> {
 
-                    if (result != null
-                            && result.contains("PREENCHIDO")) {
+                    if (resultado != null &&
+                            resultado.contains(
+                                    "PREENCHIDO"
+                            )) {
 
-                        // Mostra apenas uma vez.
-                        if (tentativa == 0) {
+                        preenchido = true;
 
-                            Toast.makeText(
-                                    MainActivity.this,
-                                    "Código enviado aos 8 campos!",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
+                        Toast.makeText(
+                                MainActivity.this,
+                                "99Food preenchida: "
+                                        + codigo,
+                                Toast.LENGTH_SHORT
+                        ).show();
                     }
                 }
         );
     }
 
-    private void showUnsupportedPlatform() {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-        webView.loadDataWithBaseURL(
-                null,
-
-                "<html>" +
-
-                "<body style='" +
-                "font-family:sans-serif;" +
-                "background:#f3e7d3;" +
-                "padding:32px'>" +
-
-                "<h2 style='color:#6b4f35'>" +
-                "Da Roça Entregas" +
-                "</h2>" +
-
-                "<p>" +
-                "Esta plataforma ainda não foi configurada." +
-                "</p>" +
-
-                "<p>" +
-                "A estrutura está preparada para " +
-                "receber a 99Food futuramente." +
-                "</p>" +
-
-                "</body>" +
-
-                "</html>",
-
-                "text/html",
-                "UTF-8",
+        handler.removeCallbacksAndMessages(
                 null
         );
     }
